@@ -15,6 +15,10 @@ __pycache__/
 # Local test / debug outputs
 response_*.json
 
+# Node
+node_modules/
+frontend/dist/
+
 # Law corpus (large, regenerable from pipeline)
 data/raw/*.txt
 data/processed/*.json

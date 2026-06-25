@@ -1,0 +1,14 @@
+﻿.\venv\Scripts\python.exe : Traceback (most recent call last):
+At C:\Users\Yasen Aleksiev\AppData\Local\Temp\ps-script-6336bb36-5e3a-494b-9035-0f614f5fa282.ps1:91 char:55
++ ... anLawChat"; .\venv\Scripts\python.exe scripts\test_search.py 2>&1 | O ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Users\Yasen Aleksiev\source\BulgarianLawChat\scripts\test_search.py", line 19, in <module>
+    print(f"{i:2}. {cite:20} score={s['score']:.4f}  {s['text'][:80]}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Yasen Aleksiev\.pyenv\pyenv-win\versions\3.13.2\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 4-5: character maps to <undefined>

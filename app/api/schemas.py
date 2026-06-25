@@ -31,8 +31,8 @@ class HealthResponse(BaseModel):
 
 class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
-    retrieval_top_k: int = Field(default=8, ge=1, le=20)
-    context_top_k: int = Field(default=5, ge=1, le=10)
+    retrieval_top_k: int = Field(default=16, ge=1, le=20)
+    context_top_k: int = Field(default=8, ge=1, le=10)
     rerank: bool | None = None
 
 

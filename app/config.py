@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     init_db_on_startup: bool = True
     llm_model: str = "gpt-4o-mini"
     llm_temperature: float = 0.1
-    retrieval_top_k: int = 8
-    context_top_k: int = 5
+    retrieval_top_k: int = 16
+    context_top_k: int = 8
     rerank_enabled: bool = True
     rerank_model: str = "BAAI/bge-reranker-v2-m3"
 

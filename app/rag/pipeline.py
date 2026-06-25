@@ -6,9 +6,9 @@ from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.rag.generator import generate_answer
-from app.rag.query import clean_question
+from app.rag.query import clean_question, retrieval_queries
 from app.rag.reranker import rerank_chunks
-from app.rag.retriever import SearchResult, search_chunks
+from app.rag.retriever import SearchResult, search_chunks_multi
 
 
 @dataclass
@@ -32,7 +32,11 @@ def answer_question(
     retrieve_k = retrieval_top_k or settings.retrieval_top_k
     context_k = context_top_k or settings.context_top_k
 
-    chunks = search_chunks(session, cleaned, top_k=retrieve_k)
+    chunks = search_chunks_multi(
+        session,
+        retrieval_queries(cleaned),
+        top_k=retrieve_k,
+    )
     chunks = rerank_chunks(cleaned, chunks, enabled=rerank)
     context_chunks = chunks[:context_k]
 
