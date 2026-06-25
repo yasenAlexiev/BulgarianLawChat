@@ -5,11 +5,13 @@ from fastapi import FastAPI
 from app.api.routes import router
 from app.config import get_settings
 from app.db.session import init_db
+from app.rag.embeddings import reset_embedder
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     if get_settings().init_db_on_startup:
+        reset_embedder()
         init_db()
     yield
 

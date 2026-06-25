@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.db.models import LegalChunk
 from app.db.orm import ChunkRow
 from app.db.session import get_session_factory, init_db
-from app.rag.embeddings import get_embedder
+from app.rag.embeddings import get_embedder, reset_embedder
 
 DEFAULT_CHUNKS_DIR = Path(__file__).resolve().parents[2] / "data" / "chunks"
 BATCH_SIZE = 64
@@ -119,6 +119,7 @@ def main() -> None:
         raise FileNotFoundError(f"Input not found: {input_path}")
 
     init_db()
+    reset_embedder()
     count = ingest_path(input_path)
     print(f"Done. Upserted {count} chunks.")
 

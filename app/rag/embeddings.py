@@ -106,14 +106,31 @@ class LocalEmbedder(Embedder):
 
 
 _embedder: Embedder | None = None
+_embedder_key: tuple[str, str, int] | None = None
+
+
+def reset_embedder() -> None:
+    global _embedder, _embedder_key
+    _embedder = None
+    _embedder_key = None
+
+
+def _embedder_cache_key(settings: Settings) -> tuple[str, str, int]:
+    return (
+        settings.embedding_provider,
+        settings.embedding_model,
+        settings.embedding_dimension,
+    )
 
 
 def get_embedder() -> Embedder:
-    global _embedder
-    if _embedder is None:
-        settings = get_settings()
+    global _embedder, _embedder_key
+    settings = get_settings()
+    key = _embedder_cache_key(settings)
+    if _embedder is None or _embedder_key != key:
         if settings.embedding_provider == "openai":
             _embedder = OpenAIEmbedder(settings)
         else:
             _embedder = LocalEmbedder(settings)
+        _embedder_key = key
     return _embedder

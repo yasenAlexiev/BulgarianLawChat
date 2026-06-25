@@ -40,11 +40,32 @@ def init_db() -> None:
     settings = get_settings()
     engine = get_engine()
 
+    ChunkRow.__table__.c.embedding.type.dim = settings.embedding_dimension  # type: ignore[attr-defined]
+
     with engine.connect() as conn:
         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-        conn.commit()
 
-    # Vector column dimension must match settings before create_all.
-    ChunkRow.__table__.c.embedding.type.dim = settings.embedding_dimension  # type: ignore[attr-defined]
+        existing_dim = conn.execute(
+            text(
+                """
+                SELECT NULLIF(
+                    substring(format_type(a.atttypid, a.atttypmod) from 'vector\\((\\d+)\\)'),
+                    ''
+                )::int
+                FROM pg_attribute a
+                JOIN pg_class c ON a.attrelid = c.oid
+                JOIN pg_namespace n ON c.relnamespace = n.oid
+                WHERE c.relname = 'legal_chunks'
+                  AND a.attname = 'embedding'
+                  AND NOT a.attisdropped
+                  AND n.nspname = 'public'
+                """
+            )
+        ).scalar()
+
+        if existing_dim is not None and existing_dim != settings.embedding_dimension:
+            conn.execute(text("DROP TABLE legal_chunks"))
+
+        conn.commit()
 
     Base.metadata.create_all(bind=engine)
