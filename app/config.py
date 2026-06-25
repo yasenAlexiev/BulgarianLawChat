@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     embedding_dimension: int = 1024
     openai_api_key: str = ""
     init_db_on_startup: bool = True
+    llm_model: str = "gpt-4o-mini"
+    llm_temperature: float = 0.1
+    retrieval_top_k: int = 8
+    context_top_k: int = 5
+    rerank_enabled: bool = True
+    rerank_model: str = "BAAI/bge-reranker-v2-m3"
 
 
 def get_settings() -> Settings:

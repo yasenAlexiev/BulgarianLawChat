@@ -2,10 +2,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from app.api.schemas import ChunkHit, HealthResponse, SearchRequest, SearchResponse
+from app.api.schemas import (
+    AskRequest,
+    AskResponse,
+    ChunkHit,
+    HealthResponse,
+    SearchRequest,
+    SearchResponse,
+    SourceCitation,
+)
 from app.config import get_settings
 from app.db.session import get_db
 from app.rag.embeddings import get_embedder
+from app.rag.pipeline import answer_question
 from app.rag.retriever import search_chunks
 
 router = APIRouter(prefix="/api/v1")
@@ -25,6 +34,7 @@ def health(db: Session = Depends(get_db)) -> HealthResponse:
         database=db_status,
         embedding_provider=settings.embedding_provider,
         embedding_model=get_embedder().model_name,
+        llm_model=settings.llm_model,
     )
 
 
@@ -47,5 +57,40 @@ def search(
                 score=hit.score,
             )
             for hit in hits
+        ],
+    )
+
+
+@router.post("/ask", response_model=AskResponse)
+def ask(
+    body: AskRequest,
+    db: Session = Depends(get_db),
+) -> AskResponse:
+    try:
+        result = answer_question(
+            db,
+            body.question,
+            retrieval_top_k=body.retrieval_top_k,
+            context_top_k=body.context_top_k,
+            rerank=body.rerank,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return AskResponse(
+        question=result.question,
+        cleaned_query=result.cleaned_query,
+        answer=result.answer,
+        sources=[
+            SourceCitation(
+                chunk_id=source.chunk_id,
+                law=source.law,
+                article=source.article,
+                paragraph=source.paragraph,
+                text=source.text,
+                metadata=source.metadata,
+                score=source.score,
+            )
+            for source in result.sources
         ],
     )

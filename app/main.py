@@ -31,4 +31,5 @@ def root() -> dict[str, str]:
         "service": "Bulgarian Law Chat",
         "docs": "/docs",
         "search": "/api/v1/search",
+        "ask": "/api/v1/ask",
     }
