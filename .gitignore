@@ -1,6 +1,22 @@
-*.txt
-*.json
-*.pyc
+# Environment
 .env
-__pycache__/
 .venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Local test / debug outputs
+response_*.json
+
+# Law corpus (large, regenerable from pipeline)
+data/raw/*.txt
+data/processed/*.json
+data/normalized/*.json
+data/chunks/*.json

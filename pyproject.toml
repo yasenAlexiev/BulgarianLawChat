@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bulgarian-law-chat"
+version = "0.1.0"
+description = "RAG chat API over Bulgarian legal texts with pgvector retrieval"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "sqlalchemy>=2.0.36",
+    "psycopg2-binary>=2.9.10",
+    "pgvector>=0.3.6",
+    "pydantic-settings>=2.6.0",
+    "openai>=1.57.0",
+    "sentence-transformers>=3.3.0",
+    "torch>=2.5.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
