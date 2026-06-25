@@ -8,10 +8,11 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.role === 'user'
+  const isStreaming = message.isStreaming && message.content !== ''
 
   return (
     <article
-      className={`message ${isUser ? 'message-user' : 'message-assistant'}${message.error ? ' message-error' : ''}`}
+      className={`message ${isUser ? 'message-user' : 'message-assistant'}${message.error ? ' message-error' : ''}${isStreaming ? ' message-streaming' : ''}`}
     >
       <div className="message-avatar" aria-hidden>
         {isUser ? 'В' : '§'}
@@ -24,10 +25,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           {isUser ? (
             <p>{message.content}</p>
           ) : (
-            <MarkdownAnswer content={message.content} />
+            <>
+              <MarkdownAnswer content={message.content} />
+              {isStreaming && <span className="streaming-cursor" />}
+            </>
           )}
         </div>
-        {!isUser && message.sources && (
+        {!isUser && message.sources && !message.isStreaming && (
           <SourcesPanel sources={message.sources} />
         )}
       </div>

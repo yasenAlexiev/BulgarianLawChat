@@ -18,6 +18,8 @@ export function ChatMessages({
   onExampleSelect,
 }: ChatMessagesProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
+  const lastMessage = messages[messages.length - 1]
+  const hasStreamingMessage = lastMessage?.isStreaming && lastMessage.content === ''
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -34,7 +36,7 @@ export function ChatMessages({
           {messages.map((message) => (
             <MessageBubble key={message.id} message={message} />
           ))}
-          {isLoading && <LoadingIndicator />}
+          {isLoading && hasStreamingMessage && <LoadingIndicator />}
         </div>
       )}
       <div ref={bottomRef} />
