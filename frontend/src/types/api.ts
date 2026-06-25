@@ -21,3 +21,17 @@ export interface AskRequest {
   context_top_k?: number
   rerank?: boolean | null
 }
+
+export interface StreamMetadataEvent {
+  question: string
+  cleaned_query: string
+  sources: SourceCitation[]
+}
+
+export interface StreamTokenEvent {
+  token: string
+}
+
+export interface StreamErrorEvent {
+  error: string
+}

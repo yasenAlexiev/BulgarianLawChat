@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import { ApiError, askQuestion } from '../api/client'
+import { ApiError, askQuestionStream } from '../api/client'
 import type { SourceCitation } from '../types/api'
 
 export interface ChatMessage {
@@ -9,6 +9,7 @@ export interface ChatMessage {
   sources?: SourceCitation[]
   cleanedQuery?: string
   error?: boolean
+  isStreaming?: boolean
 }
 
 const EXAMPLE_QUESTIONS = [
@@ -26,6 +27,13 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
+  const stopStreaming = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort()
+      abortRef.current = null
+    }
+  }, [])
+
   const sendMessage = useCallback(async (text: string) => {
     const question = text.trim()
     if (!question || isLoading) return
@@ -36,33 +44,89 @@ export function useChat() {
       content: question,
     }
 
-    setMessages((prev) => [...prev, userMessage])
+    const assistantMessageId = createId()
+
+    setMessages((prev) => [
+      ...prev,
+      userMessage,
+      {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        isStreaming: true,
+      },
+    ])
     setIsLoading(true)
 
+    abortRef.current = new AbortController()
+
     try {
-      const result = await askQuestion({ question })
-      const assistantMessage: ChatMessage = {
-        id: createId(),
-        role: 'assistant',
-        content: result.answer,
-        sources: result.sources,
-        cleanedQuery: result.cleaned_query,
-      }
-      setMessages((prev) => [...prev, assistantMessage])
-    } catch (err) {
-      const detail =
-        err instanceof ApiError
-          ? err.message
-          : 'Възникна неочаквана грешка. Проверете дали API сървърът работи.'
-      setMessages((prev) => [
-        ...prev,
+      await askQuestionStream(
+        { question },
         {
-          id: createId(),
-          role: 'assistant',
-          content: detail,
-          error: true,
+          onMetadata: (metadata) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? {
+                      ...msg,
+                      sources: metadata.sources,
+                      cleanedQuery: metadata.cleaned_query,
+                    }
+                  : msg
+              )
+            )
+          },
+          onToken: (token) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: msg.content + token }
+                  : msg
+              )
+            )
+          },
+          onDone: () => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, isStreaming: false }
+                  : msg
+              )
+            )
+          },
+          onError: (error) => {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === assistantMessageId
+                  ? { ...msg, content: error, error: true, isStreaming: false }
+                  : msg
+              )
+            )
+          },
         },
-      ])
+        abortRef.current.signal
+      )
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId ? { ...msg, isStreaming: false } : msg
+          )
+        )
+      } else {
+        const detail =
+          err instanceof ApiError
+            ? err.message
+            : 'Възникна неочаквана грешка. Проверете дали API сървърът работи.'
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: detail, error: true, isStreaming: false }
+              : msg
+          )
+        )
+      }
     } finally {
       setIsLoading(false)
       abortRef.current = null
@@ -70,8 +134,9 @@ export function useChat() {
   }, [isLoading])
 
   const clearChat = useCallback(() => {
+    stopStreaming()
     setMessages([])
-  }, [])
+  }, [stopStreaming])
 
   return {
     messages,
@@ -79,5 +144,6 @@ export function useChat() {
     exampleQuestions: EXAMPLE_QUESTIONS,
     sendMessage,
     clearChat,
+    stopStreaming,
   }
 }
