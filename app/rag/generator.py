@@ -1,11 +1,18 @@
 from __future__ import annotations
 
 from app.config import get_settings
-from app.rag.prompts import SYSTEM_PROMPT, build_user_prompt
+from app.rag.prompts import (
+    INSUFFICIENT_INFO_MESSAGE,
+    SYSTEM_PROMPT,
+    build_user_prompt,
+)
 from app.rag.retriever import SearchResult
 
 
 def generate_answer(question: str, chunks: list[SearchResult]) -> str:
+    if not chunks:
+        return INSUFFICIENT_INFO_MESSAGE
+
     settings = get_settings()
     if not settings.openai_api_key:
         raise ValueError("OPENAI_API_KEY is required for answer generation")
