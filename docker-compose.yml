@@ -1,0 +1,20 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: bulgarian-law-chat-db
+    environment:
+      POSTGRES_USER: lawchat
+      POSTGRES_PASSWORD: lawchat
+      POSTGRES_DB: lawchat
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lawchat -d lawchat"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

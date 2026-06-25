@@ -1,3 +1,6 @@
 *.txt
 *.json
 *.pyc
+.env
+__pycache__/
+.venv/

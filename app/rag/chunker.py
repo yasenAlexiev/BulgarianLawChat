@@ -17,6 +17,7 @@ from pathlib import Path
 from app.db.models import Document, LegalChunk
 from app.integration.normalizer import (
     load_parsed_law,
+    make_document_id,
     normalize_parsed_law,
     slugify_article,
     slugify_law,
@@ -72,7 +73,7 @@ def chunk_documents(
         if len(full_with_header) <= max_article_chars:
             chunks.append(
                 LegalChunk(
-                    chunk_id=make_chunk_id(law_slug, article_number, None),
+                    chunk_id=make_document_id(law_slug, article_number, None, 0),
                     law=law_title,
                     article=article_number,
                     paragraph=None,
@@ -88,9 +89,7 @@ def chunk_documents(
         for doc in article_docs:
             chunks.append(
                 LegalChunk(
-                    chunk_id=make_chunk_id(
-                        law_slug, article_number, doc.paragraph_number
-                    ),
+                    chunk_id=doc.id,
                     law=law_title,
                     article=article_number,
                     paragraph=doc.paragraph_number,
